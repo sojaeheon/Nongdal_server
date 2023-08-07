@@ -5,7 +5,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const session = require('express-session');
 
 // //test
 // app.post('/user/login', (req, res) => {
@@ -21,14 +20,7 @@ const session = require('express-session');
 //     }
 //   });
 
-/*
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '1201',
-  database: 'sogong',
-});
-*/
+
 
 mysql 
 const connection = mysql.createConnection({
@@ -48,57 +40,66 @@ connection.connect((err) => {
 });
 
 // 세션 설정
-app.use(
-    session({
-        secret: 'your-secret-key',
-        resave: false,
-        saveUninitialized: false
-    })
-);
+// app.use(
+//     session({
+//         secret: 'your-secret-key',
+//         resave: false,
+//         saveUninitialized: false
+//     })
+// );
 
 //회원가입
 app.post('/user/join', (req, res) => {
-  try {
+    try {
       console.log(req.body);
       const userId = req.body.UserId;
       const userPwd = req.body.UserPwd;
       const userEmail = req.body.UserEmail;
-
-      const sql = 'INSERT INTO users (id, password, email) VALUES (?, ?, ?)';
-      const params = [userId, userPwd, userEmail];
-
-      if(userPwd==null&&userEmail==null){
-
-      }else{
-        connection.query(sql, params, (err, result) => {
-            let resultCode = 404;
-            let message = '에러가 발생했습니다';
-            
   
-            if (err) {
-                console.log(err);
-                
-            } else {
-                resultCode = 200;
-                message = '회원가입에 성공했습니다.';
-                
-            }
-  
+      const query = 'SELECT * FROM users WHERE id = ?';
+      connection.query(query, [userId], (error, results) => {
+        if (error) {
+          console.error('아이디 중복 확인 실패:', error);
+          res.json({
+            'code': 500,
+            'message': '서버 에러가 발생했습니다.'
+          });
+        } else {
+          if (results.length > 0) {
             res.json({
-                'code': resultCode,
-                'message': message,
+              'code': 404,
+              'message': '아이디 중복! 회원가입 실패'
             });
-        });
-      }
-      
-  } catch (error) {
+          } else {
+            // 회원가입 처리 로직
+            const sql = 'INSERT INTO users (id, password, email) VALUES (?, ?, ?)';
+            const params = [userId, userPwd, userEmail];
+            connection.query(sql, params, (error, results) => {
+              if (error) {
+                console.log(error);
+                res.json({
+                  'code': 500,
+                  'message': '에러가 발생했습니다'
+                });
+              } else {
+                res.json({
+                  'code': 200,
+                  'message': '회원가입에 성공했습니다.'
+                });
+              }
+            });
+          }
+        }
+      });
+    } catch (error) {
       console.error('에러가 발생했습니다:', error);
       res.json({
-          'code': 500,
-          'message': '서버 에러가 발생했습니다.'
+        'code': 500,
+        'message': '서버 에러가 발생했습니다.'
       });
-  }
-});
+    }
+  });
+
 
 //로그인
 app.post('/user/login', (req, res) => {
@@ -122,9 +123,6 @@ app.post('/user/login', (req, res) => {
         } else {
             if (result.length > 0) {
                 resultCode = 200;
-                req.session.users = {
-                id: result[0].id,
-            };
                 message = '로그인 성공! ' + result[0].id + '님 환영합니다!';
             }else {
             resultCode = 204;
@@ -318,7 +316,7 @@ app.post('/user/delete', (req, res) => {
     try {
         console.log(req.body);
         const sYear = req.body.sYear;
-        
+
         const sMonth = req.body.sMonth;
         const sDate = req.body.sDate;
         const stext = req.body.sText;
@@ -375,6 +373,115 @@ app.post('/user/delete', (req, res) => {
         });
     }
 });
+//이메일 수정
+app.post('/user/changeE', (req, res) => {
+    try {
+        console.log(req.body);
+
+        const userid = req.body.UserId;
+        const email = req.body.UserEmail;
+        const sql = 'UPDATE users SET email = ? where id = ?';
+
+        connection.query(sql, [email,userid], (err, result) => {
+            let resultCode = 404;
+            let message = '에러가 발생했습니다';
+
+            if (err) {
+                console.log(err);
+            } else {
+                if (result.affectedRows > 0) {
+                    resultCode = 200;
+                    message = '이메일 수정 성공';
+                }else {
+                  resultCode = 204;
+                  message = '조회 실패';
+                }     
+            }
+  
+            res.json({
+                'code': resultCode,
+                'message': message,
+            });
+        });
+    } catch (error) {
+        console.error('에러가 발생했습니다:', error);
+        res.json({
+            'code': 500,
+            'message': '서버 에러가 발생했습니다.'
+        });
+    }
+  });
+
+
+//비밀번호 수정
+app.post('/user/changeP', (req, res) => {
+    try {
+        console.log(req.body);
+
+        const userid = req.body.UserId;
+        const userpw = req.body.UserPwd;
+        const sql = 'UPDATE users SET password = ? where id = ?';
+
+        connection.query(sql, [userpw,userid], (err, result) => {
+            let resultCode = 404;
+            let message = '에러가 발생했습니다';
+
+            if (err) {
+                console.log(err);
+            } else {
+                if (result.affectedRows > 0) {
+                    resultCode = 200;
+                    message = '비밀번호 수정 성공';
+                }else {
+                  resultCode = 204;
+                  message = '조회 실패';
+                }     
+            }
+  
+            res.json({
+                'code': resultCode,
+                'message': message,
+            });
+        });
+    } catch (error) {
+        console.error('에러가 발생했습니다:', error);
+        res.json({
+            'code': 500,
+            'message': '서버 에러가 발생했습니다.'
+        });
+    }
+  });
+
+
+//중복확인
+app.post('/user/checkId', (req, res) => {
+    const userId = req.body.UserId;
+  
+    // 아이디 중복 확인
+    const query = 'SELECT * FROM users WHERE id = ?';
+    connection.query(query, [userId], (error, results) => {
+      if (error) {
+        console.error('아이디 중복 확인 실패:', error);
+        res.status(500).json({
+          'code': 500,
+          'message': '서버 에러가 발생했습니다.'
+        });
+      } else {
+        if (results.length > 0) {
+          res.json({
+            'code': 200,
+            'message': '이미 사용 중인 아이디입니다.'
+          });
+        } else {
+          res.json({
+            'code': 200,
+            'message': '사용 가능한 아이디입니다.'
+          });
+        }
+      }
+    });
+  });
+
 
 app.listen(3000, () => {
   console.log('서버가 http://localhost:3000/ 에서 실행 중입니다.');
