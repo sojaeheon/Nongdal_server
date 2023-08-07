@@ -67,25 +67,30 @@ app.post('/user/join', (req, res) => {
       const sql = 'INSERT INTO users (id, password, email) VALUES (?, ?, ?)';
       const params = [userId, userPwd, userEmail];
 
-      connection.query(sql, params, (err, result) => {
-          let resultCode = 404;
-          let message = '에러가 발생했습니다';
-          
+      if(userPwd==null&&userEmail==null){
 
-          if (err) {
-              console.log(err);
-              
-          } else {
-              resultCode = 200;
-              message = '회원가입에 성공했습니다.';
-              
-          }
-
-          res.json({
-              'code': resultCode,
-              'message': message,
-          });
-      });
+      }else{
+        connection.query(sql, params, (err, result) => {
+            let resultCode = 404;
+            let message = '에러가 발생했습니다';
+            
+  
+            if (err) {
+                console.log(err);
+                
+            } else {
+                resultCode = 200;
+                message = '회원가입에 성공했습니다.';
+                
+            }
+  
+            res.json({
+                'code': resultCode,
+                'message': message,
+            });
+        });
+      }
+      
   } catch (error) {
       console.error('에러가 발생했습니다:', error);
       res.json({
@@ -234,6 +239,8 @@ app.post('/user/st', (req, res) => {
   });
   */
 
+
+//성장일지 메모
 app.post('/user/memo', (req, res) => {
 try {
     console.log(req.body);
@@ -305,6 +312,68 @@ try {
         'message': '서버 에러가 발생했습니다.'
     });
 }
+});
+
+app.post('/user/delete', (req, res) => {
+    try {
+        console.log(req.body);
+        const sYear = req.body.sYear;
+        
+        const sMonth = req.body.sMonth;
+        const sDate = req.body.sDate;
+        const stext = req.body.sText;
+        const sinput1 = req.body.sinput1;
+        const sinput2 = req.body.sinput2;
+        const sinput3 = req.body.sinput3;
+    
+        const selectSql = 'SELECT COUNT(*) AS count FROM strawdata WHERE syear = ? AND smonth = ? AND sdate = ?';
+        const selectParams = [sYear, sMonth, sDate];
+    
+        connection.query(selectSql, selectParams, (selectErr, selectResult) => {
+            if (selectErr) {
+                console.log(selectErr);
+                res.json({
+                    'code': 500,
+                    'message': '서버 에러가 발생했습니다.'
+                });
+            } else {
+                const count = selectResult[0].count;
+                if (count > 0) {
+                    // 이미 데이터가 존재하는 경우, DELETE 실행
+                    const deleteSql = 'DELETE from strawdata WHERE syear =?  AND smonth = ? AND sdate = ?';
+                    const deleteParams = [sYear, sMonth, sDate];
+    
+                    connection.query(deleteSql, deleteParams, (updateErr, updateResult) => {
+                        if (updateErr) {
+                            console.log(updateErr);
+                            res.json({
+                                'code': 500,
+                                'message': '서버 에러가 발생했습니다.'
+                            });
+                        } else {
+                            res.json({
+                                'code': 200,
+                                'message': '모두 삭제하였습니다.'
+                            });
+                        }
+                    });
+                } else {
+                    // 데이터가 없는 경우, 메세지 전송
+                    res.json({
+                        'code': 200,
+                        'message': '데이터가 존재하지 않습니다.'
+                    });
+                    
+                }
+            }
+        });
+    } catch (error) {
+        console.error('에러가 발생했습니다:', error);
+        res.json({
+            'code': 500,
+            'message': '서버 에러가 발생했습니다.'
+        });
+    }
 });
 
 app.listen(3000, () => {
