@@ -24,10 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 
 mysql 
 const connection = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'root',
-    password: '2049',
-    database: 'ui_ms',
+    host: '203.234.62.198',
+    user: 'ui_m',
+    password: '011010',
+    database: 'ui',
   });
 
 connection.connect((err) => {
@@ -56,7 +56,7 @@ app.post('/user/join', (req, res) => {
       const userPwd = req.body.UserPwd;
       const userEmail = req.body.UserEmail;
   
-      const query = 'SELECT * FROM users WHERE id = ?';
+      const query = 'SELECT * FROM users WHERE u_id = ?';
       connection.query(query, [userId], (error, results) => {
         if (error) {
           console.error('아이디 중복 확인 실패:', error);
@@ -72,7 +72,7 @@ app.post('/user/join', (req, res) => {
             });
           } else {
             // 회원가입 처리 로직
-            const sql = 'INSERT INTO users (id, password, email) VALUES (?, ?, ?)';
+            const sql = 'INSERT INTO users (u_id, password, email) VALUES (?, ?, ?)';
             const params = [userId, userPwd, userEmail];
             connection.query(sql, params, (error, results) => {
               if (error) {
@@ -110,7 +110,7 @@ app.post('/user/login', (req, res) => {
     const userPwd = req.body.UserPwd;
 
 
-    const sql = 'SELECT * FROM ui_ms.users WHERE id = ? AND password = ?';
+    const sql = 'SELECT * FROM ui.users WHERE u_id = ? AND password = ?';
 
     connection.query(sql, [userId,userPwd], (err, result) => {
         let resultCode = 404;
@@ -458,7 +458,7 @@ app.post('/user/checkId', (req, res) => {
     const userId = req.body.UserId;
   
     // 아이디 중복 확인
-    const query = 'SELECT * FROM users WHERE id = ?';
+    const query = 'SELECT * FROM users WHERE u_id = ?';
     connection.query(query, [userId], (error, results) => {
       if (error) {
         console.error('아이디 중복 확인 실패:', error);
