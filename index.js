@@ -312,6 +312,87 @@ try {
 }
 });
 
+//아이디 비밀번호 찾기
+app.post('/user/FindI', (req, res) => {
+    try {
+        console.log(req.body);
+
+        const email = req.body.UserEmail;
+        const sql = 'SELECT u_id FROM users where email = ?';
+
+        connection.query(sql, [email], (err, result) => {
+            let resultCode = 404;
+            let message = '에러가 발생했습니다';
+            let rUserId;
+
+            if (err) {
+                console.log(err);
+            } else {
+                if (result.length > 0) {
+                    resultCode = 200;
+                    message = '아이디 찾기 성공!' + result[0].u_id;
+                    rUserId = result[0].u_id;
+                }else {
+                  resultCode = 204;
+                  message = '해당 이메일로 가입한 아이디가 없습니다!';
+                }     
+            }
+  
+            res.json({
+                'code': resultCode,
+                'message': message,
+                'rUserId': rUserId
+            });
+        });
+    } catch (error) {
+        console.error('에러가 발생했습니다:', error);
+        res.json({
+            'code': 500,
+            'message': '서버 에러가 발생했습니다.'
+        });
+    }
+  });
+
+  app.post('/user/FindP', (req, res) => {
+    try {
+        console.log(req.body);
+
+        const userid = req.body.UserId;
+        const sql = 'SELECT password FROM users where u_id = ?';
+
+        connection.query(sql, [userid], (err, result) => {
+            let resultCode = 404;
+            let message = '에러가 발생했습니다';
+            let rUserPw;
+
+            if (err) {
+                console.log(err);
+            } else {
+                if (result.length > 0) {
+                    resultCode = 200;
+                    message = '비밀번호 찾기 성공!' + result[0].password;
+                    rUserPw = result[0].password;
+                }else {
+                  resultCode = 204;
+                  message = '해당 아이디는 없습니다!';
+                }     
+            }
+  
+            res.json({
+                'code': resultCode,
+                'message': message,
+                'rUserId': rUserPw
+            });
+        });
+    } catch (error) {
+        console.error('에러가 발생했습니다:', error);
+        res.json({
+            'code': 500,
+            'message': '서버 에러가 발생했습니다.'
+        });
+    }
+  });
+
 app.post('/user/delete', (req, res) => {
     try {
         console.log(req.body);
@@ -373,6 +454,7 @@ app.post('/user/delete', (req, res) => {
         });
     }
 });
+
 //이메일 수정
 app.post('/user/changeE', (req, res) => {
     try {
