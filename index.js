@@ -181,10 +181,10 @@ app.post('/user/st', (req, res) => {
             res.json({
                 'code': resultCode,
                 'message': message,
-                'growth_content': growth_content,
-                'plant_height': plant_height,
-                'crown_diameter': crown_diameter,
-                'leaf_length': leaf_length
+                'sText': growth_content,
+                'sinput1': plant_height,
+                'sinput2': crown_diameter,
+                'sinput3': leaf_length
             });
         });
     } catch (error) {
