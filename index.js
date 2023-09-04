@@ -151,27 +151,27 @@ app.post('/user/st', (req, res) => {
         const year = req.body.sYear;
         const month = req.body.sMonth;
         const date = req.body.sDate;
-        const sql = 'SELECT * FROM strawdata WHERE syear = ? AND smonth = ? AND sdate = ?';
+        const sql = 'SELECT * FROM calendar WHERE year = ? AND month = ? AND date = ?';
     
         connection.query(sql, [year,month,date], (err, result) => {
             console.log(year + ',' + month + ',' + date);
             let resultCode = 404;
             let message = '에러가 발생했습니다';
-            let sText;
-            let sinput1;
-            let sinput2;
-            let sinput3;
+            let growth_content;
+            let plant_height;
+            let crown_diameter;
+            let leaf_length;
             if (err) {
                 console.log(err);
             } else {
                 if (result.length > 0) {
                     resultCode = 200;
-                    sText = result[0].stext;
-                    sinput1 = result[0].sinput1;
-                    sinput2 = result[0].sinput2;
-                    sinput3 = result[0].sinput3;
+                    growth_content = result[0].growth_content;
+                    plant_height = result[0].plant_height;
+                    crown_diameter = result[0].crown_diameter;
+                    leaf_length = result[0].leaf_length;
                     message = '조회 성공';
-                    console.log(sinput1 + ',' + sinput2 + ',' + sinput3 + ',' + sText);
+                    console.log(plant_height + ',' + crown_diameter + ',' + leaf_length + ',' + growth_content);
                 }else {
                   resultCode = 204;
                   message = '조회 실패';
@@ -181,10 +181,10 @@ app.post('/user/st', (req, res) => {
             res.json({
                 'code': resultCode,
                 'message': message,
-                'sText': sText,
-                'sinput1': sinput1,
-                'sinput2': sinput2,
-                'sinput3': sinput3
+                'growth_content': growth_content,
+                'plant_height': plant_height,
+                'crown_diameter': crown_diameter,
+                'leaf_length': leaf_length
             });
         });
     } catch (error) {
@@ -242,16 +242,16 @@ app.post('/user/st', (req, res) => {
 app.post('/user/memo', (req, res) => {
 try {
     console.log(req.body);
-    const sYear = req.body.sYear;
-    const sMonth = req.body.sMonth;
-    const sDate = req.body.sDate;
-    const stext = req.body.sText;
-    const sinput1 = req.body.sinput1;
-    const sinput2 = req.body.sinput2;
-    const sinput3 = req.body.sinput3;
+    const year = req.body.sYear;
+    const month = req.body.sMonth;
+    const date = req.body.sDate;
+    const growth_content = req.body.sText;
+    const plant_height = req.body.sinput1;
+    const crown_diameter = req.body.sinput2;
+    const leaf_length = req.body.sinput3;
 
-    const selectSql = 'SELECT COUNT(*) AS count FROM strawdata WHERE syear = ? AND smonth = ? AND sdate = ?';
-    const selectParams = [sYear, sMonth, sDate];
+    const selectSql = 'SELECT COUNT(*) AS count FROM calendar WHERE year = ? AND month = ? AND date = ?';
+    const selectParams = [year, month, date];
 
     connection.query(selectSql, selectParams, (selectErr, selectResult) => {
         if (selectErr) {
@@ -264,8 +264,8 @@ try {
             const count = selectResult[0].count;
             if (count > 0) {
                 // 이미 데이터가 존재하는 경우, UPDATE 쿼리 실행
-                const updateSql = 'UPDATE strawdata SET sinput1 = ?, sinput2 = ?, sinput3 = ?, stext = ? WHERE syear = ? AND smonth = ? AND sdate = ?';
-                const updateParams = [sinput1, sinput2, sinput3, stext, sYear, sMonth, sDate];
+                const updateSql = 'UPDATE calendar SET plant_height = ?, crown_diameter = ?, leaf_length = ?, growth_content = ? WHERE year = ? AND month = ? AND date = ?';
+                const updateParams = [plant_height, crown_diameter, leaf_length, growth_content, year, month, date];
 
                 connection.query(updateSql, updateParams, (updateErr, updateResult) => {
                     if (updateErr) {
@@ -283,8 +283,8 @@ try {
                 });
             } else {
                 // 데이터가 없는 경우, INSERT 쿼리 실행
-                const insertSql = 'INSERT INTO strawdata (syear, smonth, sdate, sinput1, sinput2, sinput3, stext) VALUES (?, ?, ?, ?, ?, ?, ?)';
-                const insertParams = [sYear, sMonth, sDate, sinput1, sinput2, sinput3, stext];
+                const insertSql = 'INSERT INTO calendar (year, month, date, plant_height, crown_diameter, leaf_length, growth_content) VALUES (?, ?, ?, ?, ?, ?, ?)';
+                const insertParams = [year, month, date, plant_height, crown_diameter, leaf_length, growth_content];
 
                 connection.query(insertSql, insertParams, (insertErr, insertResult) => {
                     if (insertErr) {
@@ -396,17 +396,17 @@ app.post('/user/FindI', (req, res) => {
 app.post('/user/delete', (req, res) => {
     try {
         console.log(req.body);
-        const sYear = req.body.sYear;
+        const year = req.body.sYear;
 
-        const sMonth = req.body.sMonth;
-        const sDate = req.body.sDate;
-        const stext = req.body.sText;
-        const sinput1 = req.body.sinput1;
-        const sinput2 = req.body.sinput2;
-        const sinput3 = req.body.sinput3;
+        const month = req.body.sMonth;
+        const date = req.body.sDate;
+        const growth_content = req.body.sText;
+        const plant_height = req.body.sinput1;
+        const crown_diameter = req.body.sinput2;
+        const leaf_length = req.body.sinput3;
     
-        const selectSql = 'SELECT COUNT(*) AS count FROM strawdata WHERE syear = ? AND smonth = ? AND sdate = ?';
-        const selectParams = [sYear, sMonth, sDate];
+        const selectSql = 'SELECT COUNT(*) AS count FROM calendar WHERE year = ? AND month = ? AND date = ?';
+        const selectParams = [year, month, date];
     
         connection.query(selectSql, selectParams, (selectErr, selectResult) => {
             if (selectErr) {
@@ -419,8 +419,8 @@ app.post('/user/delete', (req, res) => {
                 const count = selectResult[0].count;
                 if (count > 0) {
                     // 이미 데이터가 존재하는 경우, DELETE 실행
-                    const deleteSql = 'DELETE from strawdata WHERE syear =?  AND smonth = ? AND sdate = ?';
-                    const deleteParams = [sYear, sMonth, sDate];
+                    const deleteSql = 'DELETE from calendar WHERE year =?  AND month = ? AND date = ?';
+                    const deleteParams = [year, month, date];
     
                     connection.query(deleteSql, deleteParams, (updateErr, updateResult) => {
                         if (updateErr) {
